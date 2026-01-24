@@ -1,0 +1,31 @@
+# OS-specific files
+.DS_Store
+Thumbs.db
+dist
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist-electron
+out
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.zip
+build_log.txt
+eslint.config.js
+
+# Packages
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
