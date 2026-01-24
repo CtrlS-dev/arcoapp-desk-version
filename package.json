@@ -1,7 +1,7 @@
 {
   "name": "arco-app",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A minimalist exchange rate tracker for BCV",
   "author": "Arco App Team",
   "type": "module",
@@ -17,7 +17,7 @@
     "preview": "vite preview",
     "electron": "wait-on tcp:5173 && electron .",
     "electron:dev": "concurrently -k \"npm run dev\" \"npm run electron\"",
-    "electron:build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && (taskkill /F /IM \"ArcoApp.exe\" /T || set ERRORLEVEL=0) && (taskkill /F /IM \"electron.exe\" /T || set ERRORLEVEL=0) && electron-builder --publish never"
+    "electron:build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && (taskkill /F /IM \"ArcoApp.exe\" /T || set ERRORLEVEL=0) && (taskkill /F /IM \"electron.exe\" /T || set ERRORLEVEL=0) && electron-builder"
   },
   "build": {
     "appId": "com.arco.app",
