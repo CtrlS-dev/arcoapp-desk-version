@@ -169,7 +169,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       </div>
                       <div>
                         <p className="text-sm md:text-[12px] font-medium text-white">Versión</p>
-                        <p className="text-[10px] md:text-[12px] text-gray-500">0.0.6</p>
+                        <p className="text-[10px] md:text-[12px] text-gray-500">0.0.8</p>
                       </div>
                     </div>
                   </div>
