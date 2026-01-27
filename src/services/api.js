@@ -25,7 +25,7 @@ export const fetchRates = async () => {
     if (!data || !data.current) {
       throw new Error("Invalid API response structure");
     }
-
+ 
     const date = data.current.date || new Date().toISOString();
 
     const bcv_usd_data = data.current.usd || 0;
