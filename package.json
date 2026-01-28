@@ -20,7 +20,9 @@
     "preview": "vite preview",
     "electron": "wait-on tcp:5173 && electron .",
     "electron:dev": "concurrently -k \"npm run dev\" \"npm run electron\"",
-    "electron:build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && (taskkill /F /IM \"ArcoApp.exe\" /T || set ERRORLEVEL=0) && (taskkill /F /IM \"electron.exe\" /T || set ERRORLEVEL=0) && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && electron-builder --mac",
+    "electron:build:win": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && (taskkill /F /IM \"ArcoApp.exe\" /T || set ERRORLEVEL=0) && (taskkill /F /IM \"electron.exe\" /T || set ERRORLEVEL=0) && electron-builder --win"
   },
   "build": {
     "appId": "com.arco.app",
@@ -47,6 +49,11 @@
       "target": "nsis",
       "icon": "public/arco-logo.png"
     },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/arco-logo.png",
+      "category": "public.app-category.finance"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -56,6 +63,7 @@
     }
   },
   "dependencies": {
+    "driver.js": "^1.4.0",
     "electron-updater": "^6.7.3"
   },
   "devDependencies": {
