@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Search, Copy } from 'lucide-react';
-import clsx from 'clsx';
+import { Calendar, Search, Download, FileSpreadsheet } from 'lucide-react';
+import ExcelJS from 'exceljs';
 
 const HistorySection = ({ data, loading, onCopy }) => {
   const getNDaysAgo = (n) => {
@@ -35,10 +35,67 @@ const HistorySection = ({ data, loading, onCopy }) => {
     });
   }, [data, startDate, endDate]);
 
-  const handleRowClick = (item) => {
-    const textToCopy = `Dólar: ${formatCurrency(item.usd)} Bs | Euro: ${formatCurrency(item.eur)} Bs (${item.date})`;
-    navigator.clipboard.writeText(textToCopy);
-    if (onCopy) onCopy("Tasas copiadas");
+  //TODO: cambiar colores y tamaños
+  const handleCopyDate = (date) => {
+    navigator.clipboard.writeText(date);
+    if (onCopy) onCopy("Fecha copiada");
+  };
+
+  const handleCopyRate = (label, value) => {
+    const formatted = formatCurrency(value);
+    navigator.clipboard.writeText(formatted);
+    if (onCopy) onCopy(`${label} copiado`);
+  };
+  //Funcion para exportar a CSV TODO: mejorar nombres y demas ........------
+  const exportToCSV = () => {
+    if (!filteredData.length) return;
+
+    const headers = ['Fecha', 'Dólar (Bs)', 'Euro (Bs)'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredData.map(item => 
+        `${item.date},${item.usd},${item.eur}`
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `[ARCOAPP]historial_tasas_${startDate}_${endDate}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  const exportToExcel = async () => {
+    if (!filteredData.length) return;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Historial');
+
+    worksheet.columns = [
+      { header: 'Fecha', key: 'date', width: 15 },
+      { header: 'Dólar (Bs)', key: 'usd', width: 15 },
+      { header: 'Euro (Bs)', key: 'eur', width: 15 }
+    ];
+
+    filteredData.forEach(item => {
+      worksheet.addRow({ date: item.date, usd: item.usd, eur: item.eur });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `[ARCOAPP]historial_tasas_${startDate}_${endDate}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -73,17 +130,40 @@ const HistorySection = ({ data, loading, onCopy }) => {
           </div>
         </div>
 
-        {(startDate !== getNDaysAgo(7) || endDate !== getToday()) && (
-          <button
-            onClick={() => {
-              setStartDate(getNDaysAgo(7));
-              setEndDate(getToday());
-            }}
-            className="text-[9px] text-gray-500 hover:text-indigo-400 transition-colors cursor-pointer no-drag w-fit mx-auto uppercase tracking-tighter font-bold"
-          >
-            Restaurar últimos 7 días
-          </button>
-        )}
+        <div className="flex items-center justify-between px-1">
+          {(startDate !== getNDaysAgo(7) || endDate !== getToday()) ? (
+            <button
+              onClick={() => {
+                setStartDate(getNDaysAgo(7));
+                setEndDate(getToday());
+              }}
+              className="text-[9px] text-gray-500 hover:text-indigo-400 transition-colors cursor-pointer no-drag uppercase tracking-tighter font-bold"
+            >
+              Filtrar última semana
+            </button>
+          ) : <div />}
+
+          {filteredData.length > 0 && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={exportToCSV}
+                className="text-[12px] flex items-center gap-1 text-gray-500 hover:text-gray-300 transition-colors cursor-pointer no-drag uppercase tracking-tighter font-bold"
+                title="Exportar a CSV"
+              >
+                <Download size={22} />
+                CSV
+              </button>
+              <button
+                onClick={exportToExcel}
+                className="text-[12px] flex items-center gap-1 text-gray-500 hover:text-green-400 transition-colors cursor-pointer no-drag uppercase tracking-tighter font-bold"
+                title="Exportar a Excel"
+              >
+                <FileSpreadsheet size={22} />
+                Excel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* List */}
@@ -101,25 +181,30 @@ const HistorySection = ({ data, loading, onCopy }) => {
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.01 }}
-                onClick={() => handleRowClick(item)}
-                className="bg-[#111111] border border-white/5 hover:border-indigo-500/30 p-3 rounded-xl flex items-center justify-between group transition-all cursor-pointer no-drag hover:bg-[#161616] active:scale-[0.98]"
+                className="bg-[#111111] border border-white/5 p-3 rounded-xl flex items-center justify-between transition-all no-drag hover:bg-[#161616]"
               >
-                <div className="flex flex-col">
-                  <span className="text-[8px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Fecha</span>
-                  <span className="text-xs font-medium text-gray-300">{item.date}</span>
+                <div 
+                  onClick={(e) => { e.stopPropagation(); handleCopyDate(item.date); }}
+                  className="flex flex-col cursor-pointer hover:bg-white/5 px-2 -ml-2 py-1 rounded-lg transition-colors group"
+                >
+                  <span className="text-[8px] uppercase tracking-widest text-gray-500 font-bold mb-0.5 group-hover:text-indigo-400 transition-colors">Fecha</span>
+                  <span className="text-xs font-medium text-gray-300 group-hover:text-white transition-colors">{item.date}</span>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-end">
-                    <span className="text-[8px] uppercase tracking-widest text-gray-600 font-bold">USD</span>
-                    <span className="text-xs font-bold text-white font-mono">{formatCurrency(item.usd)}</span>
+                <div className="flex gap-2">
+                  <div 
+                    onClick={(e) => { e.stopPropagation(); handleCopyRate("Dólar", item.usd); }}
+                    className="flex flex-col items-end cursor-pointer hover:bg-green-500/10 px-2 py-1 rounded-lg transition-colors group"
+                  >
+                    <span className="text-[8px] uppercase tracking-widest text-gray-600 font-bold group-hover:text-green-400 transition-colors">USD</span>
+                    <span className="text-xs font-bold text-white font-mono group-hover:text-green-300 transition-colors">{formatCurrency(item.usd)}</span>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[8px] uppercase tracking-widest text-gray-600 font-bold">EUR</span>
-                    <span className="text-xs font-bold text-white font-mono">{formatCurrency(item.eur)}</span>
-                  </div>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400">
-                    <Copy size={12} />
+                  <div 
+                    onClick={(e) => { e.stopPropagation(); handleCopyRate("Euro", item.eur); }}
+                    className="flex flex-col items-end cursor-pointer hover:bg-blue-500/10 px-2 py-1 rounded-lg transition-colors group"
+                  >
+                    <span className="text-[8px] uppercase tracking-widest text-gray-600 font-bold group-hover:text-blue-400 transition-colors">EUR</span>
+                    <span className="text-xs font-bold text-white font-mono group-hover:text-blue-300 transition-colors">{formatCurrency(item.eur)}</span>
                   </div>
                 </div>
               </motion.div>

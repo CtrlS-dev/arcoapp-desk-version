@@ -169,7 +169,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       </div>
                       <div>
                         <p className="text-sm md:text-[12px] font-medium text-white">Versión</p>
-                        <p className="text-[10px] md:text-[12px] text-gray-500">0.0.11</p>
+                        <p className="text-[10px] md:text-[12px] text-gray-500">0.0.12</p>
                       </div>
                     </div>
                   </div>
@@ -186,7 +186,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                           <DollarSign className="w-4 h-4 text-green-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">Activar Tasa Personalizada</p>
+                          <p className="text-sm font-medium text-white">Activar Tasa</p>
                           <p className="text-[10px] text-gray-500">Mostrar en el tablero</p>
                         </div>
                       </div>

@@ -42,7 +42,7 @@ function createWindow() {
     backgroundColor: '#004715',
     resizable: true,
     minWidth: 350,
-    minHeight: 550,
+    minHeight: 580,
     maxWidth: 1000,
     maxHeight: 720,
     skipTaskbar: false,
